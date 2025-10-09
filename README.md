@@ -1,6 +1,7 @@
 # EN3150 Assignment 03: CNN Image Classification
 
 ## Project Overview
+## Project Overview
 
 **Course:** EN3150 - Pattern Recognition  
 **Assignment:** Simple Convolutional Neural Network for Classification  
