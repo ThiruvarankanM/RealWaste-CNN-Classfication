@@ -5,7 +5,7 @@ A comprehensive deep learning implementation for multi-class waste image classif
 
 ---
 
-## 📊 Dataset Overview
+##  Dataset Overview
 
 **RealWaste Dataset** from [UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/908/realwaste)
 - **Total Images**: 4,752 images (224×224 pixels)
@@ -16,7 +16,7 @@ A comprehensive deep learning implementation for multi-class waste image classif
 
 ---
 
-## 🏗️ Architecture & Models
+##  Architecture & Models
 
 ### 1. Custom CNN (From Scratch)
 **Progressive architecture with hierarchical feature learning**
@@ -47,7 +47,7 @@ A comprehensive deep learning implementation for multi-class waste image classif
 
 ---
 
-## ⚙️ Key Experimental Findings
+##  Key Experimental Findings
 
 ### Learning Rate Analysis
 Systematic testing with three learning rates over 15 epochs:
@@ -82,7 +82,7 @@ Callbacks:  ReduceLROnPlateau + EarlyStopping
 
 ---
 
-## 🎯 Activation Functions
+##  Activation Functions
 
 | Layer | Function | Reason |
 |-------|----------|--------|
@@ -91,46 +91,7 @@ Callbacks:  ReduceLROnPlateau + EarlyStopping
 
 ---
 
-## 📁 Project Structure
-
-```
-├── EN3150_A03_RealWaste_CNN_Final.ipynb    # Main Jupyter notebook
-├── final.tex                                # Enhanced LaTeX report
-├── final2.tex                               # Simplified LaTeX report
-├── ANSWER_COMPARISON.md                     # Detailed answer comparison
-├── Graphs_Output/                           # Generated visualizations
-│   ├── 1_Class_Distribution.png
-│   ├── 2_Sample_Images_3x3_Grid.png
-│   ├── 3_Learning_Rate_Comparison.png
-│   ├── 4_Custom_CNN_Training_History.png
-│   ├── 5_Optimizer_Comparison.png
-│   ├── 6_Transfer_Learning_Training_Curves.png
-│   ├── 7_Transfer_Learning_Confusion_Matrices.png
-│   ├── 8_Final_Model_Comparison.png
-│   └── 9_Custom_CNN_Confusion_Matrix.png
-└── README.md (this file)
-```
-
----
-
-## 🚀 Quick Start
-
-### Requirements
-```bash
-pip install tensorflow keras numpy pandas scikit-learn matplotlib seaborn pillow
-```
-
-### Run the Notebook
-```bash
-jupyter notebook EN3150_A03_RealWaste_CNN_Final.ipynb
-```
-
-### Or Open in Colab
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ThiruvarankanM/RealWaste-CNN-Classfication/blob/main/EN3150_A03_RealWaste_CNN_Final.ipynb)
-
----
-
-## 📊 Key Results Summary
+##  Key Results Summary
 
 ### Custom CNN Training
 - **Best Validation Accuracy**: 73.30%
@@ -146,7 +107,7 @@ jupyter notebook EN3150_A03_RealWaste_CNN_Final.ipynb
 
 ---
 
-## 👥 Team Members
+## 👥 Team ByteBrains
 
 - S. Abisan (220013N)
 - S. Changeethan (220084F)
