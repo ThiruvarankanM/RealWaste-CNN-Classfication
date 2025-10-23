@@ -116,13 +116,13 @@ Callbacks:  ReduceLROnPlateau + EarlyStopping
 
 ---
 
-## 📚 Citation
+##  Citation
 
 Single, S., Iranmanesh, S., & Raad, R. (2023). *RealWaste* [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C5SS4G
 
 ---
 
-## 📝 License
+##  License
 
 This project is part of EN3150 Pattern Recognition course assignment.
 
