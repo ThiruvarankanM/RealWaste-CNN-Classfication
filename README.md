@@ -1,5 +1,4 @@
 # RealWaste CNN Image Classification
-# RealWaste CNN Image Classification
 
 **EN3150 Assignment 03 - Pattern Recognition**  
 A comprehensive deep learning implementation for multi-class waste image classification using Convolutional Neural Networks.
