@@ -13,7 +13,6 @@ A comprehensive deep learning implementation for multi-class waste image classif
   - Cardboard, Glass, Metal, Organic, Paper, Plastic, Textile, Trash, Wood
 - **Data Split**: 70% Training (3,326) | 15% Validation (712) | 15% Testing (712)
 - **Download**: [https://archive.ics.uci.edu/dataset/908/realwaste](https://archive.ics.uci.edu/dataset/908/realwaste)
-
 ---
 
 ##  Architecture & Models
