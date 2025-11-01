@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RealWaste Classifier - AI Waste Classification</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f2e2e 100%),
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080"><defs><pattern id="waste" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="15" fill="%23228B22" opacity="0.05"/><rect x="100" y="100" width="40" height="40" fill="%2387CEEB" opacity="0.04"/><circle cx="150" cy="80" r="12" fill="%23FF6B6B" opacity="0.05"/><path d="M 30 150 Q 40 140 50 150" stroke="%239370DB" fill="none" opacity="0.04" stroke-width="2"/></pattern></defs><rect width="1920" height="1080" fill="url(%23waste)"/></svg>') fixed;
+            background-size: auto, 200px 200px;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated overlay with AI theme */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 15% 35%, rgba(34, 197, 94, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 85% 75%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(139, 69, 19, 0.03) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+            animation: ambientShift 15s ease-in-out infinite;
+        }
+
+        /* Animated floating waste elements */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.08) 1px, transparent 1px),
+                radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.08) 1px, transparent 1px),
+                radial-gradient(circle at 50% 50%, rgba(34, 197, 94, 0.06) 1px, transparent 1px),
+                radial-gradient(circle at 70% 30%, rgba(255, 107, 107, 0.06) 1px, transparent 1px);
+            background-size: 250px 250px, 180px 180px, 300px 300px, 220px 220px;
+            animation: drift 25s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes drift {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(60px, 60px); }
+        }
+
+        @keyframes ambientShift {
+            0%, 100% { transform: scale(1) translate(0, 0); }
+            50% { transform: scale(1.05) translate(10px, 10px); }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: slideDown 0.8s ease-out;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+            border: 1px solid rgba(34, 197, 94, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(34, 197, 94, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        header h1 {
+            font-size: 3.5em;
+            background: linear-gradient(135deg, #22c55e 0%, #10b981 50%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            font-weight: 900;
+            text-shadow: 0 0 30px rgba(34, 197, 94, 0.3);
+            letter-spacing: -1px;
+            position: relative;
+            z-index: 1;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
+            50% { text-shadow: 0 0 40px rgba(34, 197, 94, 0.6); }
+        }
+
+        header p {
+            font-size: 1.25em;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        header .subtitle {
+            font-size: 0.95em;
+            color: #94a3b8;
+            font-style: italic;
+            position: relative;
+            z-index: 1;
+            font-weight: 400;
+        }
+
+        /* Main content wrapper */
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .upload-section {
+            animation: slideLeft 0.8s ease-out 0.2s both;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-60px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #e2e8f0;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .upload-box {
+            border: 3px dashed #22c55e;
+            border-radius: 20px;
+            padding: 60px 40px;
+            text-align: center;
+            cursor: pointer;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(34, 197, 94, 0.1);
+        }
+
+        .upload-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .upload-box:hover::before {
+            left: 100%;
+        }
+
+        .upload-box:hover {
+            border-color: #10b981;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%);
+            box-shadow: 0 20px 50px rgba(34, 197, 94, 0.4);
+            transform: translateY(-8px);
+        }
+
+        .upload-box.active {
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(34, 197, 94, 0.2) 100%);
+            box-shadow: 0 20px 60px rgba(59, 130, 246, 0.5);
+        }
+
+        .upload-icon {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .upload-text-main {
+            font-size: 1.4em;
+            color: #e2e8f0;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .upload-text-sub {
+            font-size: 0.95em;
+            color: #94a3b8;
+            margin-bottom: 15px;
+        }
+
+        .upload-formats {
+            font-size: 0.85em;
+            color: #64748b;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* Results section */
+        .results-section {
+            animation: slideRight 0.8s ease-out 0.2s both;
+        }
+
+        @keyframes slideRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .results-container {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 76, 58, 0.9) 100%);
+            border: 2px solid rgba(34, 197, 94, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            backdrop-filter: blur(20px);
+            min-height: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .results-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .results-container::after {
+            content: '';
+            position: absolute;
+            bottom: -50%;
+            right: -50%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(34, 197, 94, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite reverse;
+        }
+
+        .preview-image {
+            width: 100%;
+            max-width: 280px;
+            height: 280px;
+            object-fit: cover;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 50px rgba(34, 197, 94, 0.4);
+            display: none;
+            border: 2px solid rgba(34, 197, 94, 0.3);
+            position: relative;
+            z-index: 2;
+        }
+
+        .preview-image.show {
+            display: block;
+            animation: zoomIn 0.5s ease-out;
+        }
+
+        @keyframes zoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.85);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Results display */
+        #results {
+            width: 100%;
+            display: none;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        #results.active {
+            display: block;
+            opacity: 1;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .prediction-box {
+            background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+            padding: 35px 30px;
+            border-radius: 16px;
+            margin-bottom: 0px;
+            text-align: center;
+            box-shadow: 0 15px 50px rgba(34, 197, 94, 0.4);
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .prediction-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .predicted-class {
+            font-size: 2.5em;
+            color: white;
+            font-weight: 900;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .confidence-text {
+            font-size: 1.15em;
+            color: rgba(255, 255, 255, 0.98);
+            position: relative;
+            z-index: 1;
+            font-weight: 700;
+        }
+
+        .confidence-bar-container {
+            width: 100%;
+            height: 14px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 18px;
+            box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.15);
+            position: relative;
+            z-index: 1;
+        }
+
+        .confidence-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            border-radius: 8px;
+            width: 0%;
+            transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.85em;
+            font-weight: 800;
+            position: relative;
+        }
+
+        .confidence-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: barShimmer 1.5s infinite;
+        }
+
+        @keyframes barShimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Breakdown section - HIDDEN */
+        .breakdown-section {
+            display: none;
+            margin-top: 30px;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+        }
+
+        .breakdown-title {
+            font-size: 1em;
+            color: #e2e8f0;
+            font-weight: 800;
+            margin-bottom: 18px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 0.95em;
+        }
+
+        .breakdown-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 12px;
+        }
+
+        .breakdown-list::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        .breakdown-list::-webkit-scrollbar-track {
+            background: rgba(100, 116, 139, 0.1);
+            border-radius: 4px;
+        }
+
+        .breakdown-list::-webkit-scrollbar-thumb {
+            background: rgba(34, 197, 94, 0.4);
+            border-radius: 4px;
+        }
+
+        .breakdown-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(34, 197, 94, 0.7);
+        }
+
+        .breakdown-item {
+            display: grid;
+            grid-template-columns: 130px 1fr 65px;
+            gap: 15px;
+            align-items: center;
+            padding: 13px 15px;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(34, 197, 94, 0.1);
+        }
+
+        .breakdown-item:hover {
+            background: rgba(34, 197, 94, 0.12);
+            transform: translateX(8px);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.1);
+        }
+
+        .breakdown-class {
+            font-size: 0.92em;
+            color: #cbd5e1;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .breakdown-bar-container {
+            width: 100%;
+            height: 9px;
+            background: rgba(100, 116, 139, 0.25);
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .breakdown-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #06b6d4);
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .breakdown-percent {
+            font-size: 0.88em;
+            color: #94a3b8;
+            font-weight: 800;
+            text-align: right;
+        }
+
+        /* Loading state */
+        #loading {
+            display: none;
+            text-align: center;
+            width: 100%;
+        }
+
+        #loading.show {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(34, 197, 94, 0.2);
+            border-top: 4px solid #22c55e;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.1em;
+            color: #e2e8f0;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .loading-subtext {
+            font-size: 0.9em;
+            color: #94a3b8;
+        }
+
+        /* Error state */
+        .error-box {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
+            border: 2px solid #ef4444;
+            border-radius: 12px;
+            padding: 15px;
+            color: #fca5a5;
+            display: none;
+            margin-bottom: 20px;
+            font-weight: 600;
+            animation: slideDown 0.4s ease-out;
+            width: 100%;
+        }
+
+        .error-box.show {
+            display: block;
+        }
+
+        /* Initial loading screen */
+        #initialLoading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeOut 0.8s ease-out 1.5s both;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                pointer-events: none;
+            }
+        }
+
+        .splash-spinner {
+            width: 80px;
+            height: 80px;
+            border: 6px solid rgba(34, 197, 94, 0.2);
+            border-top: 6px solid #22c55e;
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+            margin-bottom: 30px;
+        }
+
+        .splash-text {
+            font-size: 1.8em;
+            color: #e2e8f0;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .splash-subtext {
+            font-size: 1em;
+            color: #94a3b8;
+        }
+
+        #mainContent {
+            display: none;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 50px 20px;
+            border-top: 2px solid rgba(34, 197, 94, 0.2);
+            margin-top: 70px;
+            color: #64748b;
+            font-size: 0.95em;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.03) 0%, rgba(59, 130, 246, 0.03) 100%);
+            position: relative;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #22c55e, transparent);
+        }
+
+        footer p {
+            margin: 8px 0;
+            font-weight: 500;
+        }
+
+        footer strong {
+            color: #22c55e;
+            font-weight: 700;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            header h1 {
+                font-size: 2.5em;
+            }
+
+            .upload-box {
+                padding: 40px 20px;
+            }
+
+            .breakdown-item {
+                grid-template-columns: 100px 1fr 50px;
+                font-size: 0.9em;
+            }
+
+            .predicted-class {
+                font-size: 1.8em;
+            }
+
+            .section-title {
+                font-size: 1.4em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Initial Loading Screen -->
+    <div id="initialLoading">
+        <div class="splash-spinner"></div>
+        <div class="splash-text">🤖 RealWaste Classifier</div>
+        <div class="splash-subtext">AI-Powered Waste Classification</div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent">
+        <div class="container">
+            <!-- Header -->
+            <header>
+                <h1>🤖 RealWaste Classifier</h1>
+                <p>Advanced AI Waste Classification System</p>
+                <p class="subtitle">Powered by MobileNetV2 Deep Learning | Real-time Predictions</p>
+            </header>
+
+            <!-- Main Content Grid -->
+            <div class="content-wrapper">
+                <!-- Upload Section -->
+                <div class="upload-section">
+                    <h2 class="section-title">📤 Upload Image</h2>
+                    
+                    <div class="upload-box" id="uploadBox">
+                        <div class="upload-icon">🗑️</div>
+                        <div class="upload-text-main">Drag & Drop or Click</div>
+                        <div class="upload-text-sub">Select your waste image</div>
+                        <div class="upload-formats">✓ JPG • PNG • BMP (Max 16MB)</div>
+                    </div>
+
+                    <input type="file" id="fileInput" accept="image/jpeg,image/png,image/bmp" />
+                </div>
+
+                <!-- Results Section -->
+                <div class="results-section">
+                    <h2 class="section-title">📊 Classification Results</h2>
+                    
+                    <div class="results-container">
+                        <!-- Error Box -->
+                        <div class="error-box" id="errorBox"></div>
+
+                        <!-- Loading State -->
+                        <div id="loading">
+                            <div class="spinner"></div>
+                            <div class="loading-text">🔍 Analyzing waste image...</div>
+                            <div class="loading-subtext">Please wait...</div>
+                        </div>
+
+                        <!-- Preview Image -->
+                        <img id="previewImage" class="preview-image" alt="Preview" />
+
+                        <!-- Results Display -->
+                        <div id="results">
+                            <div class="prediction-box" id="predictionBox">
+                                <div class="predicted-class" id="predictedClass">-</div>
+                                <div class="confidence-text" id="confidenceText">-</div>
+                                <div class="confidence-bar-container">
+                                    <div class="confidence-bar" id="confidenceBar">0%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer>
+                <p><strong>RealWaste Classifier</strong> | EN3150 Assignment 03 | UCI RealWaste Dataset</p>
+                <p>Building a sustainable future through AI waste classification ♻️</p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        // Show main content when page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const initialLoading = document.getElementById('initialLoading');
+                const mainContent = document.getElementById('mainContent');
+                if (initialLoading && mainContent) {
+                    initialLoading.style.display = 'none';
+                    mainContent.style.display = 'block';
+                }
+            }, 1200);
+        });
+
+        const fileInput = document.getElementById('fileInput');
+        const uploadBox = document.getElementById('uploadBox');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const errorBox = document.getElementById('errorBox');
+
+        // File selection
+        uploadBox.addEventListener('click', () => {
+            fileInput.value = '';
+            fileInput.click();
+        });
+
+        uploadBox.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadBox.classList.add('active');
+        });
+
+        uploadBox.addEventListener('dragleave', () => {
+            uploadBox.classList.remove('active');
+        });
+
+        uploadBox.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadBox.classList.remove('active');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.value = '';
+                fileInput.files = files;
+                handleFileUpload();
+            }
+        });
+
+        fileInput.addEventListener('change', handleFileUpload);
+
+        async function handleFileUpload() {
+            let file = null;
+            
+            if (fileInput.files && fileInput.files.length > 0) {
+                file = fileInput.files[0];
+            }
+            
+            if (!file) return;
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const previewImg = document.getElementById('previewImage');
+                previewImg.src = e.target.result;
+                previewImg.classList.add('show');
+            };
+            reader.readAsDataURL(file);
+
+            // Show loading immediately
+            loading.classList.add('show');
+            results.classList.remove('active');
+            errorBox.classList.remove('show');
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const loadingText = document.querySelector('.loading-text');
+                loadingText.textContent = '🔍 Analyzing waste image...';
+                
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    loadingText.textContent = '✅ Classification complete!';
+                    setTimeout(() => {
+                        loading.classList.remove('show');
+                        displayResults(data);
+                        fileInput.value = '';
+                    }, 800);
+                } else {
+                    loading.classList.remove('show');
+                    showError(data.error || 'Prediction failed');
+                    fileInput.value = '';
+                }
+            } catch (error) {
+                loading.classList.remove('show');
+                showError('Error: ' + error.message);
+                fileInput.value = '';
+            }
+        }
+
+        function displayResults(data) {
+            document.getElementById('predictedClass').textContent = data.class;
+            document.getElementById('confidenceText').textContent = `Confidence: ${data.confidence_percent}%`;
+            
+            const bar = document.getElementById('confidenceBar');
+            bar.style.width = '0%';
+            bar.textContent = '0%';
+            
+            setTimeout(() => {
+                bar.style.width = `${data.confidence_percent}%`;
+                bar.textContent = `${data.confidence_percent}%`;
+            }, 100);
+
+            document.getElementById('predictionBox').style.background = 
+                `linear-gradient(135deg, ${data.color} 0%, ${data.color}dd 100%)`;
+
+            results.classList.add('active');
+        }
+
+        function showError(msg) {
+            errorBox.textContent = '❌ ' + msg;
+            errorBox.classList.add('show');
+        }
+    </script>
+</body>
+</html>
