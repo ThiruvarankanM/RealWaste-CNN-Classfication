@@ -5,7 +5,8 @@
 A comprehensive deep learning implementation for multi-class waste image classification using Convolutional Neural Networks.
 
 ## 🎬 Live Demo
-**Watch the system in action:** [YouTube Demo - RealWaste Classifier](https://youtu.be/YB701LFWDc8)
+[![Demo Video](https://img.youtube.com/vi/YB701LFWDc8/0.jpg)](https://youtu.be/YB701LFWDc8)
+
 
 ---
 
